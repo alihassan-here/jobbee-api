@@ -2,12 +2,21 @@ const Job = require('../models/jobsModel');
 const geoCoder = require('../utils/geocoder');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middlewares/catchAsyncErrors');
+const APIFilters = require('../utils/apiFilters');
 
 // @desc    Get all jobs
 // @route   GET api/v1/jobs
 // @access  Public
 exports.getAllJobs = catchAsyncErrors(async (req, res, next) => {
-    const jobs = await Job.find();
+
+    const apiFilters = new APIFilters(Job.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .searchByQuery()
+        .pagination();
+
+    const jobs = await apiFilters.query;
     res.status(200).json({
         success: true,
         results: jobs.length,
