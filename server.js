@@ -1,5 +1,6 @@
 const express = require('express');
 const colors = require('colors');
+const cookieParser = require('cookie-parser');
 const connectDatabase = require('./config/database');
 const errorMiddleware = require("./middlewares/errors");
 const ErrorHandler = require('./utils/errorHandler');
@@ -21,8 +22,13 @@ connectDatabase();
 
 const app = express();
 
-//MIDDLEWARES
+//MIDDLEWARE FOR PARSING REQUEST BODY
 app.use(express.json());
+
+//MIDDLEWARE FOR PARSING COOKIES
+app.use(cookieParser());
+
+//MIDDLEWARE FOR CONSOLE LOGGING
 app.use((req, res, next) => {
     console.log(colors.bgWhite.black(req.path), colors.bgWhite.black(req.method));
     next();
