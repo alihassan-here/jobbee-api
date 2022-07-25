@@ -30,7 +30,9 @@ app.use((req, res, next) => {
 
 //IMPORTING ALL ROUTES
 const jobsRoutes = require('./routes/jobsRoute');
+const authRoutes = require('./routes/authRoute');
 app.use("/api/v1", jobsRoutes);
+app.use("/api/v1", authRoutes);
 
 //THIS SHOULD BE BELOW ALL ROUTES
 //HANDLE  UNHANDLED ROUTES
