@@ -43,8 +43,10 @@ exports.getJob = catchAsyncErrors(async (req, res, next) => {
 // @route   POST api/v1/job
 // @access  Private
 exports.newJob = catchAsyncErrors(async (req, res, next) => {
-    const job = await Job.create(req.body);
+    //ADDING USER TO BODY
+    req.body.user = req.user.id;
 
+    const job = await Job.create(req.body);
     res.status(200).json({
         success: true,
         message: "Job Created.",

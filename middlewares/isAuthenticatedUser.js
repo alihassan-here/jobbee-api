@@ -21,3 +21,13 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
     next();
 }
 );
+
+//HANDLING USER ROLES
+exports.authorizeRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(new ErrorHandler('You do not have permission to perform this action', 403));
+        }
+        next();
+    }
+}
