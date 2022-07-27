@@ -38,6 +38,9 @@ const userSchema = new mongoose.Schema({
     resetPasswordToken: String,
     resetPasswordExpires: Date
 
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
 // Encrypt password using bcrypt
@@ -74,5 +77,14 @@ userSchema.methods.generateResetPasswordToken = function () {
 
     return resetToken;
 }
+
+// Show all jobs created by user
+userSchema.virtual('jobsPublished', {
+    ref: 'Job',
+    localField: '_id',
+    foreignField: 'user',
+    justOne: false
+}
+);
 
 module.exports = mongoose.model('User', userSchema);
