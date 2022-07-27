@@ -7,6 +7,7 @@ const {
     updateJob,
     deleteJob,
     jobStats,
+    applyForJob
 } = require('../controllers/jobControllers');
 const {
     isAuthenticatedUser,
@@ -27,6 +28,8 @@ router.route("/job/:id")
     .put(isAuthenticatedUser, authorizeRoles("employeer", "admin"), updateJob)
     .delete(isAuthenticatedUser, authorizeRoles("employeer", "admin"), deleteJob);
 
+
+router.route("/job/:id/apply").put(isAuthenticatedUser, authorizeRoles("employeer"), applyForJob);
 
 
 

@@ -3,6 +3,7 @@ const geoCoder = require('../utils/geocoder');
 const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middlewares/catchAsyncErrors');
 const APIFilters = require('../utils/apiFilters');
+const path = require('path');
 
 // @desc    Get all jobs
 // @route   GET api/v1/jobs
@@ -152,4 +153,75 @@ exports.jobStats = catchAsyncErrors(async (req, res, next) => {
         success: true,
         data: stats
     })
+})
+
+
+// @desc    apply for a job
+// @route   POST api/v1/job/:id/apply
+// @access  Private
+exports.applyForJob = catchAsyncErrors(async (req, res, next) => {
+    const job = await Job.findById(req.params.id).select('+applicantsApplied');
+
+    if (!job) {
+        return next(new ErrorHandler("Job not found", 404));
+    }
+
+    //Check that if job last date is passed
+    if (job.lastDate < Date.now()) {
+        return next(new ErrorHandler("Job is closed", 404));
+    }
+
+    //Check if user already applied for job
+    for (let i = 0; i < job.applicantsApplied.length; i++) {
+        if (job.applicantsApplied[i].id === req.user.id) {
+            return next(new ErrorHandler("You already applied for this job", 404));
+        }
+    }
+
+    //Check the files
+    if (!req.files) {
+        return next(new ErrorHandler("Please upload a resume", 404));
+    }
+
+    let file = req.files.file;
+
+    //Check the file type
+    const supportedFiles = /.docs|.pdf|.docx/;
+    if (!supportedFiles.test(path.extname(file.name))) {
+        return next(new ErrorHandler("Please upload a valid file", 404));
+    }
+
+    //Check the file size
+    if (file.size > process.env.MAX_FILE_SIZE) {
+        return next(new ErrorHandler("File size is too big", 404));
+    }
+
+    //renaming file so it will be unique
+    file.name = `${req.user.name.replace(" ", "_")}_${job._id}${path.parse(file.name).ext}`;
+
+    //save file
+    file.mv(`${process.env.UPLOAD_PATH}/${file.name}`, async err => {
+        if (err) {
+            console.error(err);
+            return next(new ErrorHandler("Resume upload failed", 500));
+        }
+    });
+
+    await Job.findByIdAndUpdate(req.params.id, {
+        $push: {
+            applicantsApplied: {
+                id: req.user.id,
+                resume: file.name
+            }
+        }
+    }, {
+        new: true,
+        runValidators: true
+    })
+
+    res.status(200).json({
+        success: true,
+        message: "You have applied for this job.",
+        data: file.name,
+    });
 })
