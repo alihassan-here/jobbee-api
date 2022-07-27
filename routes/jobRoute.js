@@ -7,7 +7,7 @@ const {
     updateJob,
     deleteJob,
     jobStats,
-} = require('../controllers/jobsControllers');
+} = require('../controllers/jobControllers');
 const {
     isAuthenticatedUser,
     authorizeRoles,
